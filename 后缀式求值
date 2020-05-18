@@ -1,0 +1,154 @@
+#include<stdio.h>
+#include<string.h>
+#include<math.h>
+#include<stdlib.h>
+#include<ctype.h>
+#include<bits/stdc++.h>
+using namespace std;
+#define M 1000005
+#define ll long long
+
+
+/*************************************************************
+    后缀式求值  头文件
+**************************************************************/
+
+#define MAXSIZE 100
+typedef  struct
+{
+	double elem[MAXSIZE];
+	int  top;
+} SqStack1; //顺序栈1的类型定义,存放操作数，故定义成double型的栈
+
+/**********函数声明**********/
+//操作数栈的基本操作
+void InitStack1(SqStack1 &s);
+int StackEmpty1(SqStack1 s);
+void Push1(SqStack1 &s, double x);
+void Pop1(SqStack1 &s, double &x);
+void GetTop1(SqStack1 s, double &x);
+
+double Evaluation(char suffix[80]);//后缀式求值
+double Operate(double a, char theta, double b);//求两数a和b作θ运算的结果
+
+/**********子函数**********/
+/**********操作数栈的基本操作**********/
+void InitStack1(SqStack1 &s)   //栈的初始化
+{
+	s.top=-1;
+}
+int StackEmpty1(SqStack1 s)   //判栈空
+{
+	if(s.top==-1) return 1;
+	else return 0;
+}
+void Push1(SqStack1 &s, double x)   //将元素x入栈
+{
+	if(s.top==MAXSIZE-1)   //判栈满
+	{
+		printf("Stack is full\n");
+		return;
+	}
+	s.top++;
+	s.elem[s.top]=x;
+}
+void Pop1(SqStack1 &s, double &x)   //将栈顶元素出栈
+{
+	if(s.top==-1)   //判栈空
+	{
+		printf("Stack is empty\n");
+		return;
+	}
+	x=s.elem[s.top];
+	s.top--;
+}
+void GetTop1(SqStack1 s, double &x)   //取栈顶
+{
+	if(s.top==-1)
+	{
+		printf("Stack is empty\n");
+		return;
+	}
+	x=s.elem[s.top];
+}
+
+/**********其它子函数**********/
+double Operate(double a, char theta, double b)   //求两数a和b作θ运算的结果
+{
+	switch(theta)
+	{
+		case '+':
+			return(a+b);
+		case '-':
+			return(a-b);
+		case '*':
+			return(a*b);
+		case '/':
+			return(a/b);
+	}
+}
+
+double Evaluation(char suffix[80])   //后缀式求值
+{
+
+	SqStack1 opnd;
+	char s[80],x,top;
+	double sum,a,b,result;
+	int i,j=0,n;
+	InitStack1(opnd);//构造栈opnd存放操作数
+	i=0;
+	while(suffix[i]!='\0')
+	{
+		// 请在这里补充代码，完成本关任务
+		/********** Begin *********/
+
+		if(suffix[i]>='0'&&suffix[i]<='9')	 // 若有小数点,则小数点前
+		{
+			sum=0;
+	
+			while(suffix[i]>='0'&&suffix[i]<='9')
+			{
+				sum=sum*10+suffix[i++]-'0';
+			}
+
+			if(suffix[i]=='.')   //小数点后
+			{
+				i++;
+				double m=0.1;
+				while(suffix[i]>='0'&&suffix[i]<='9')
+				{
+					sum=sum+(suffix[i++]-'0')*m;
+					m=m*0.1;
+				}
+			}
+			opnd.top++;
+			opnd.elem[opnd.top]=sum;
+		}
+
+		else if(suffix[i]!=',')
+		{
+				Pop1(opnd,a);
+				Pop1(opnd,b);
+				Push1(opnd,Operate(b,suffix[i],a));
+		}
+		i++;
+		/********** End **********/
+	}
+	Pop1(opnd,result);
+	return(result);
+}
+
+int main()
+{
+	char suffix[80];
+	double result;
+	scanf("%s",suffix);//输入一个后缀算术表达式
+	result=Evaluation(suffix);//借助栈对后缀式求值
+	printf("Result: %.3lf\n",result);
+}
+//9,3,1,-3,*+1,2,/+
+//15.500
+//123.678,5,5.6,78,+*+78.24,2,/-100,+
+//602.558
+//0,123.678,-5,0,5.6,-78,+*+78.24,2,/-100,+
+//299.202
